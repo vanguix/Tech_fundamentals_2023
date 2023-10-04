@@ -1,6 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+import time
+
+start = time.time()
 
 # Load the dataset
 df = pd.read_csv('dummies.csv')
@@ -12,11 +15,9 @@ wcss_values = []  # WCSS values for different number of clusters (K)
 for k in k_values:
     # Randomly initialize centroids
     centroids = data[np.random.choice(data.shape[0], k, replace=False)]
-    
-    iteration = 0
     prev_centroids = None
     
-    while np.not_equal(centroids, prev_centroids).any() and iteration < 50:
+    while np.not_equal(centroids, prev_centroids).any() :
         # Assign each point to the nearest centroid
         distances = np.sqrt(((data - centroids[:, np.newaxis])**2).sum(axis=2))
         labels = np.argmin(distances, axis=0)
@@ -30,12 +31,14 @@ for k in k_values:
             if np.isnan(centroids[j]).any():
                 centroids[j] = prev_centroids[j]
         
-        iteration += 1
     
     # Calculate WCSS for current K
     wcss = np.sum((data - centroids[labels]) ** 2)
     wcss_values.append(wcss)
 
+
+end = time.time()
+print(end - start)
 # Plot the elbow graph
 plt.plot(k_values, wcss_values, marker='o', linestyle='-', color='b')
 plt.xlabel('Number of Clusters (K)')
