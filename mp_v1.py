@@ -64,51 +64,51 @@ if __name__ == "__main__":
    t1 = time()
    print("Time: ", str(t1 - t0))
    
-   # Construct and plot the elbow graph and find the optimal clusters number (k).
-   plt.plot(k_values, wcss_values, marker='o', linestyle='-', color='b')
-   plt.xlabel('Number of Clusters (K)')
-   plt.ylabel('WCSS (Within-Cluster Sum of Squares)')
-   plt.title('Elbow Graph')
-   plt.grid(True)
-   plt.show()
-   
-   #Cluster the data using the optimum value using k_means --> k=4
-   wcss_4,labels_4, centroids_4= k_means(4,data)
+# Construct and plot the elbow graph and find the optimal clusters number (k).
+plt.plot(k_values, wcss_values, marker='o', linestyle='-', color='b')
+plt.xlabel('Number of Clusters (K)')
+plt.ylabel('WCSS (Within-Cluster Sum of Squares)')
+plt.title('Elbow Graph')
+plt.grid(True)
+plt.show()
+
+#Cluster the data using the optimum value using k_means --> k=4
+wcss_4,labels_4, centroids_4= k_means(4,data)
 
 
-   # Plot the first two dimensions of the clusters (price and speed)
-   plt.scatter(data[:, 1], data[:, 2], c=labels_4, cmap='viridis')
-   plt.scatter(centroids_4[:, 1], centroids_4[:, 2], s=300, c='red', marker='X', label='Cluster Centers')
-   plt.xlabel('Price')
-   plt.ylabel('Speed')
-   plt.title('Scatter plot with Clusters')
-   plt.legend()
-   plt.show()
+# Plot the first two dimensions of the clusters (price and speed)
+plt.scatter(data[:, 1], data[:, 2], c=labels_4, cmap='viridis')
+plt.scatter(centroids_4[:, 1], centroids_4[:, 2], s=300, c='red', marker='X', label='Cluster Centers')
+plt.xlabel('Price')
+plt.ylabel('Speed')
+plt.title('Scatter plot with Clusters')
+plt.legend()
+plt.show()
 
-   #Find the cluster with the highest average price and print it.
-   # Calculate average price for each cluster
-   def calculate_average_price(data, labels, cluster_num):
-       cluster_prices = data[labels == cluster_num][:, 1]  # Extract prices for the given cluster
-       average_price = np.mean(cluster_prices)
-       return average_price
+#Find the cluster with the highest average price and print it.
+# Calculate average price for each cluster
+def calculate_average_price(data, labels, cluster_num):
+    cluster_prices = data[labels == cluster_num][:, 1]  # Extract prices for the given cluster
+    average_price = np.mean(cluster_prices)
+    return average_price
 
-   # Calculate average prices for all clusters
-   average_prices_per_cluster = [calculate_average_price(data, labels_4, cluster_num) for cluster_num in range(4)]
-   highest_avg_price_cluster = np.argmax(average_prices_per_cluster)
-   highest_avg_price = average_prices_per_cluster[highest_avg_price_cluster]
+# Calculate average prices for all clusters
+average_prices_per_cluster = [calculate_average_price(data, labels_4, cluster_num) for cluster_num in range(4)]
+highest_avg_price_cluster = np.argmax(average_prices_per_cluster)
+highest_avg_price = average_prices_per_cluster[highest_avg_price_cluster]
 
-   # Print the cluster with the highest average price
-   print("Cluster with the highest average price is cluster", highest_avg_price_cluster)
-   print("Average price of the cluster:", highest_avg_price)
+# Print the cluster with the highest average price
+print("Cluster with the highest average price is cluster", highest_avg_price_cluster)
+print("Average price of the cluster:", highest_avg_price)
 
 
-   #Print a heat map using the values of the clusters centroids
-   plt.figure(figsize=(10, 6))
-   sns.heatmap(np.array([centroids_4[:, 1], centroids_4[:, 2]]), annot=True, fmt='.2f', cmap='YlGnBu', cbar=True)
-   plt.xlabel('Price')
-   plt.ylabel('Speed')
-   plt.title('Cluster Centroids Heat Map')
-   plt.show()
+#Print a heat map using the values of the clusters centroids
+plt.figure(figsize=(10, 6))
+sns.heatmap(np.array([centroids_4[:, 1], centroids_4[:, 2]]), annot=True, fmt='.2f', cmap='YlGnBu', cbar=True)
+plt.xlabel('Price')
+plt.ylabel('Speed')
+plt.title('Cluster Centroids Heat Map')
+plt.show()
 
 
    

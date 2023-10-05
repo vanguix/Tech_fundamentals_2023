@@ -61,9 +61,9 @@ plt.title('Elbow Graph')
 plt.grid(True)
 plt.show()
 
-
+chosen_k= 3
 #Cluster the data using the optimum value using k_means --> k=4
-wcss_4,labels_4, centroids_4= k_means(4,data)
+wcss_4,labels_4, centroids_4= k_means(chosen_k,data)
 
 
 # Plot the first two dimensions of the clusters (price and speed)
@@ -83,7 +83,7 @@ def calculate_average_price(data, labels, cluster_num):
     return average_price
 
 # Calculate average prices for all clusters
-average_prices_per_cluster = [calculate_average_price(data, labels_4, cluster_num) for cluster_num in range(4)]
+average_prices_per_cluster = [calculate_average_price(data, labels_4, cluster_num) for cluster_num in range(chosen_k)]
 highest_avg_price_cluster = np.argmax(average_prices_per_cluster)
 highest_avg_price = average_prices_per_cluster[highest_avg_price_cluster]
 
@@ -94,8 +94,9 @@ print("Average price of the cluster:", highest_avg_price)
 
 #Print a heat map using the values of the clusters centroids
 plt.figure(figsize=(10, 6))
-sns.heatmap(np.array([centroids_4[:, 1], centroids_4[:, 2]]), annot=True, fmt='.2f', cmap='YlGnBu', cbar=True)
-plt.xlabel('Price')
+std_centroids_4 = (centroids_4 - np.mean(centroids_4, axis=0)) / np.std(centroids_4, axis = 0)
+sns.heatmap(std_centroids_4.T, annot=True, fmt='.2f', cmap='YlGnBu', cbar=True)
+plt.xlabel('Centroids')
 plt.ylabel('Speed')
 plt.title('Cluster Centroids Heat Map')
 plt.show()
