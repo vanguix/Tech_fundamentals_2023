@@ -11,6 +11,7 @@ import pandas as pd
 import time
 import seaborn as sns
 
+
 def initialize_centroids(k,data):
     '''Initialize same seed for the k centroids, so results do not change
     Inputs:
@@ -119,7 +120,7 @@ def plot_heatmap(centroids_k):
 
 
 # Load the dataset
-df = pd.read_csv('dummies_5000.csv')
+df = pd.read_csv('dummies.csv')
 data = df.to_numpy()
 k_values = range(1, 11)
 wcss_values = []  
@@ -138,7 +139,6 @@ for k in k_values:
 chosen_k = 4
 centroids_k, prev_centroids_k = initialize_centroids(chosen_k,data)
 centroids_k, labels_k = k_means(chosen_k,data,centroids_k,prev_centroids_k)
-wcss_k = calculate_wcss(data,centroids_k,labels_k)
 
 #4.-Measure time
 end = time.time()

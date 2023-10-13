@@ -1,0 +1,19 @@
+Serial 5000
+Execution time in seconds:  1.163980484008789
+Cluster with the highest average price is cluster 1
+Average price of the cluster: 3431.083606557377
+
+Parallel threading 5000
+Execution time in seconds:  0.7105536460876465
+Cluster with the highest average price is cluster 1
+Average price of the cluster: 3431.083606557377
+
+Serial 500000
+Execution time in seconds:  521.6324636936188
+Cluster with the highest average price is cluster 0
+Average price of the cluster: 2427.900055200442
+
+parallel threading 500000
+Execution time in seconds:  94.3239414691925
+Cluster with the highest average price is cluster 0
+Average price of the cluster: 2427.900055200442
