@@ -63,6 +63,7 @@ if __name__ == "__main__":
 
    t1 = time()
    print("Time: ", str(t1 - t0))
+   print("Number of cores: ", str(mp.cpu_count()))
    
 # Construct and plot the elbow graph and find the optimal clusters number (k).
 plt.plot(k_values, wcss_values, marker='o', linestyle='-', color='b')
