@@ -1,10 +1,18 @@
-import threading
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Oct 15 12:58:28 2023
+
+@author: laram
+"""
+
+import multiprocessing as mp
 import numpy as np
 import pandas as pd
 import time
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.spatial.distance import cdist
+
 
 def initialize_centroids(k,data):
     '''Initialize same seed for the k centroids, so results do not change
@@ -106,7 +114,7 @@ def plot_heatmap(centroids_k):
     Output:
         -Heatmap of all the features in the dataset for a given clustering'''
     plt.figure(figsize=(10, 6))
-    y_labels = ['price', 'speed', 'hd','ram', 'screen', 'cores','cd', 'laptop', 'trend']
+    y_labels = ['trend','laptop','cd', 'cores', 'screen', 'ram', 'hd','speed','price']
     std_centroids_k = (centroids_k - np.mean(centroids_k, axis=0)) / np.std(centroids_k, axis = 0)
     sns.heatmap(std_centroids_k.T, annot=True,yticklabels=y_labels, fmt='.2f', cmap='YlGnBu', cbar=True)
     plt.xlabel('Clusters')
@@ -115,37 +123,34 @@ def plot_heatmap(centroids_k):
     plt.show()
 
 
-# Define a threading lock for synchronizing access to wcss_values list
-wcss_values_lock = threading.Lock()
-
 def start_k_means(k, data):
     in_centroids, prev_centroids = initialize_centroids(k, data)
     centroids, labels = k_means(k, data, in_centroids, prev_centroids)
     wcss = calculate_wcss(data, centroids, labels)
     
-    # Synchronize access to the shared wcss_values list
-    with wcss_values_lock:
-        wcss_values.append((k, wcss))
-
+    return k, wcss
+    
 if __name__ == "__main__":
-    df = pd.read_csv('dummies.csv')
+    df = pd.read_csv('computers_5000.csv', usecols=lambda column: column != 'id')
+    for col in ['cd', 'laptop']:
+        df[col].replace(['no', 'yes'], [0, 1], inplace=True)
     data = df.to_numpy()
     k_values = range(1, 11)
     wcss_values = []
-    threads = []
-    thread = None
+    
+    pool = mp.Pool(mp.cpu_count()) 
     start = time.time()
 
-    for k_value in k_values:
-        thread = threading.Thread(target=start_k_means, args=(k_value, data))
-        threads.append(thread)
-        thread.start()
+    for k in k_values:
+        results = pool.apply(start_k_means,args=(k,data))
+        wcss_values.append(results)
+            
+    pool.close()
+    pool.join()
 
-    for thread in threads:
-        thread.join()
 
-    #3.-Cluster the data using the optimum value using k_means --> k=4
-    chosen_k = 4
+    #3.-Cluster the data using the optimum value using k_means --> k=3
+    chosen_k = 3
     centroids_k, prev_centroids_k = initialize_centroids(chosen_k, data)
     centroids_k, labels_k = k_means(chosen_k, data, centroids_k, prev_centroids_k)
 
