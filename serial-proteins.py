@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import time
+from matplotlib.ticker import MultipleLocator
 
 df = pd.read_csv("proteins_50000.csv")
 
@@ -51,22 +52,21 @@ more_matches = sorted_matches[:10]
 
 # Desempaqueta los valores en X y Y
 protein_id, num_occurences = zip(*more_matches)
-protein_id = list(protein_id)
-num_occurences = list(num_occurences)
 
-#Pide esto pero creo que se confunde porque un histograma no devuelve el numero de occurences en y
-#he intentado representar frecuencias absolutas así pero tampoco
-#hist, bins = np.histogram(protein_id, bins=5)
-#plt.hist(protein_id, bins=5, density = False)
+protein_id = sorted(list(protein_id))
+num_occurences = sorted(list(num_occurences))
 
-plt.bar(protein_id, num_occurences) #sale vacío, he probado y con una lista de numeros pequeños va bien
-#probad a ejecutarlo porque no me van spyder ni code e igual es eso
+plt.plot(protein_id, num_occurences, drawstyle='steps', linestyle='-', marker='o')
 
 print(protein_id)
 print(num_occurences)
 
 plt.xlabel('Protein ID')
 plt.ylabel('Num of occurences')
+plt.xticks(protein_id, rotation = 45)
+plt.gca().yaxis.set_major_locator(MultipleLocator(1))
+
+
 plt.show()
 
 
