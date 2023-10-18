@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Oct 15 12:58:28 2023
+Created on Tue Oct 10 14:20:10 2023
 
-@author: laram
+@author: Admin
 """
 
-import multiprocessing as mp
 import numpy as np
+import matplotlib.pyplot as plt
 import pandas as pd
 import time
-import matplotlib.pyplot as plt
 import seaborn as sns
-from scipy.spatial.distance import cdist
 
 
 def initialize_centroids(k,data):
@@ -40,15 +38,13 @@ def k_means(k,data,centroids,prev_centroids):
         - labels (numpy.ndarray): The cluster labels for each data point.
         - centroids (numpy.ndarray): The final centroids of the clusters.'''
     while np.not_equal(centroids, prev_centroids).any():
-        # Calculate distances using cdist
-        distances = cdist(data, centroids, 'euclidean')
-        labels = np.argmin(distances, axis=1)
-        
+        # Assign each point to the nearest centroid
+        distances = np.linalg.norm(data - centroids[:, np.newaxis], axis=2)
+        labels = np.argmin(distances, axis=0)
+        # Update centroids
         prev_centroids = centroids.copy()
         centroids = np.array([data[labels == j].mean(axis=0) if np.sum(labels == j) > 0 else prev_centroids[j] for j in range(k)])
-    
     return centroids, labels
-
 
 def calculate_wcss(data,centroids,labels):
     '''Calculates the WCSS (within-cluster sums of squares)
@@ -123,67 +119,45 @@ def plot_heatmap(centroids_k):
     plt.show()
 
 
-def start_k_means(k, data):
-    in_centroids, prev_centroids = initialize_centroids(k, data)
-    centroids, labels = k_means(k, data, in_centroids, prev_centroids)
-    wcss = calculate_wcss(data, centroids, labels)
-    
-    return k, wcss
-    
-if __name__ == "__main__":
-    
-    start_total=time.time()
-    
-    df = pd.read_csv('computers_500000.csv', usecols=lambda column: column != 'id')
-    for col in ['cd', 'laptop']:
-        df[col].replace(['no', 'yes'], [0, 1], inplace=True)
-    data = df.to_numpy()
-    k_values = range(1, 11)
-    wcss_values = []
-    
-    pool = mp.Pool(mp.cpu_count()) 
-    start_par = time.time()
-    
-    #1.- Construct the data for the elbow graph and find the optimal clusters number (k).
-    for k in k_values:
-        #2.- Implement the k-means algorithm
-        results = pool.apply(start_k_means,args=(k,data))
-        wcss_values.append(results)
-            
-    pool.close()
-    pool.join()
+# Load the dataset
+df = pd.read_csv('computers.csv', usecols=lambda column: column != 'id')
+for col in ['cd', 'laptop']:
+    df[col].replace(['no', 'yes'], [0, 1], inplace=True)
+data = df.to_numpy()
+k_values = range(1, 11)
+wcss_values = []  
 
-    #3.-Measure time for the parallelized part 
-    end_par = time.time()
-    print("Execution time for parallelized part in seconds: ", end_par - start_par)
+start = time.time()
 
-    #4.-Cluster the data using the optimum value using k_means --> k=3
-    chosen_k = 3
-    centroids_k, prev_centroids_k = initialize_centroids(chosen_k, data)
-    centroids_k, labels_k = k_means(chosen_k, data, centroids_k, prev_centroids_k)
+#1.- Construct the elbow graph and find the optimal clusters number (k).
+for k in k_values:
+    #2.- Implement the k-means algorithm
+    in_centroids, prev_centroids = initialize_centroids(k,data)
+    centroids, labels = k_means(k,data,in_centroids,prev_centroids)
+    wcss = calculate_wcss(data,centroids,labels)
+    wcss_values.append(wcss)
 
-    #5.-Find the cluster with the highest average price and print it.
-    average_prices_per_cluster = [calculate_average_price(data, labels_k, cluster_num) for cluster_num in range(chosen_k)]
-    highest_avg_price_cluster = np.argmax(average_prices_per_cluster)
-    highest_avg_price = average_prices_per_cluster[highest_avg_price_cluster]
-    print("Cluster with the highest average price is cluster", highest_avg_price_cluster)
-    print("Average price of the cluster:", highest_avg_price)
+#3.-Cluster the data using the optimum value using k_means --> k=3
+chosen_k = 3
+centroids_k, prev_centroids_k = initialize_centroids(chosen_k,data)
+centroids_k, labels_k = k_means(chosen_k,data,centroids_k,prev_centroids_k)
 
-    #6.-Plot the results of the elbow graph.
-    # Sort wcss_values by k before plotting (threads may give the result unordered)
-    wcss_values.sort(key=lambda x: x[0])
-    k_values, sorted_wcss_values = zip(*wcss_values)
-    
-    #7. Measure time of the total program (without the plots)
-    end_total=time.time()
-    print("Total execution time: ", end_total - start_total)
-    
-    #Plot in the elbow graph the sorted values
-    plot_elbow(k_values, sorted_wcss_values)
+#4.-Measure time
+end = time.time()
+print("Execution time in seconds: ", end - start)
 
-    #8.- Plot the first two dimensions of the clusters (price and speed)
-    plot_2D(data,labels_k,centroids_k)
+#5.-Plot the results of the elbow graph.
+plot_elbow(k_values,wcss_values)
 
+# 6.- Plot the first two dimensions of the clusters (price and speed)
+plot_2D(data,labels_k,centroids_k)
 
-    #9.- Print a heat map using the values of the clusters centroids
-    plot_heatmap(centroids_k)
+#7.-Find the cluster with the highest average price and print it.
+average_prices_per_cluster = [calculate_average_price(data, labels_k, cluster_num) for cluster_num in range(chosen_k)]
+highest_avg_price_cluster = np.argmax(average_prices_per_cluster)
+highest_avg_price = average_prices_per_cluster[highest_avg_price_cluster]
+print("Cluster with the highest average price is cluster", highest_avg_price_cluster)
+print("Average price of the cluster:", highest_avg_price)
+
+#8.- Print a heat map using the values of the clusters centroids
+plot_heatmap(centroids_k)

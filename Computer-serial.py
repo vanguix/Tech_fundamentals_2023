@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Oct 10 14:20:10 2023
+
+@author: Admin
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -8,8 +15,8 @@ import seaborn as sns
 def initialize_centroids(k,data):
     '''Initialize same seed for the k centroids, so results do not change
     Inputs:
-        - k: The number of clusters to create.
-        - data: The input data to be clustered.
+        - k (int): The number of clusters to create.
+        - data (numpy.ndarray): The input data to be clustered.
     Outputs:
         - initialized centroids and previous centroids (None)'''
     np.random.seed(4)
@@ -22,14 +29,14 @@ def k_means(k,data,centroids,prev_centroids):
     '''Perform k-means clustering on the given data.
 
         Inputs:
-        - k: The number of clusters to create.
-        - data: The input data to be clustered.
+        - k (int): The number of clusters to create.
+        - data (numpy.ndarray): The input data to be clustered.
         - centroids: initialized centroids
         - prev_centroids: None (needed for computation)
 
         Outputs:
-        - labels: The cluster labels for each data point.
-        - centroids: The final centroids of the clusters.'''
+        - labels (numpy.ndarray): The cluster labels for each data point.
+        - centroids (numpy.ndarray): The final centroids of the clusters.'''
     while np.not_equal(centroids, prev_centroids).any():
         # Assign each point to the nearest centroid
         distances = np.linalg.norm(data - centroids[:, np.newaxis], axis=2)
@@ -42,9 +49,9 @@ def k_means(k,data,centroids,prev_centroids):
 def calculate_wcss(data,centroids,labels):
     '''Calculates the WCSS (within-cluster sums of squares)
     Inputs:
-        - data: The input data that has been clustered.
+        - data: (numpy.ndarray): The input data that has been clustered.
         - centroids: final centroids
-        - labels: The cluster labels for each data point.
+        - labels (numpy.ndarray): The cluster labels for each data point.
     Output:
         -  Within-cluster sums of squares
     '''
@@ -55,7 +62,7 @@ def calculate_wcss(data,centroids,labels):
 def plot_elbow(k_values, wcss_values):
     '''Function to do an elbow plot
     Inputs:
-        -k values: set of k values to be tested
+        -k values (list): set of k values to be tested
         -wcss values: wcss calculation for each k clustering
     Output:
         -Elbow plot'''
@@ -69,8 +76,8 @@ def plot_elbow(k_values, wcss_values):
 def calculate_average_price(data, labels, cluster_num): 
     '''Calculate average price for each cluster
     Inputs:
-        - data: The input data that has been clustered.
-        - labels: The cluster labels for each data point.
+        - data (numpy.ndarray): The input data that has been clustered.
+        - labels(numpy.ndarray): The cluster labels for each data point.
         - cluster_num: n cluster
     Output:
         - average price of each cluster
@@ -83,7 +90,7 @@ def plot_2D(data,labels_k,centroids_k):
     '''Function to plot the first 2 dimensions of the data, colored by its clusters and with the clusters 
     centroids marked as a red X.
     Inputs:
-        - data: The input data that has been clustered.
+        - data (numpy.ndarray): The input data that has been clustered.
         - labels_k: labels for the k clustering
         - centroids_k: final centroids of the k clustering
     Output:
@@ -99,7 +106,7 @@ def plot_2D(data,labels_k,centroids_k):
 def plot_heatmap(centroids_k):
     '''Plot heatmap of all the features in the dataset for a given clustering
     Input: 
-        -centroids_k: final centroids of that given clustering
+        - centroids_k: final centroids of that given clustering
     Output:
         -Heatmap of all the features in the dataset for a given clustering'''
     plt.figure(figsize=(10, 6))
@@ -111,18 +118,19 @@ def plot_heatmap(centroids_k):
     plt.title('Cluster Centroids Heat Map')
     plt.show()
 
+start_total = time.time()
 
 # Load the dataset
-df = pd.read_csv('computers_5000.csv', usecols=lambda column: column != 'id')
+df = pd.read_csv('computers.csv', usecols=lambda column: column != 'id')
 for col in ['cd', 'laptop']:
     df[col].replace(['no', 'yes'], [0, 1], inplace=True)
 data = df.to_numpy()
 k_values = range(1, 11)
 wcss_values = []  
 
-start = time.time()
+start_par = time.time()
 
-#1.- Construct the elbow graph and find the optimal clusters number (k).
+#1.- Construct the data for the elbow graph and find the optimal clusters number (k).
 for k in k_values:
     #2.- Implement the k-means algorithm
     in_centroids, prev_centroids = initialize_centroids(k,data)
@@ -130,27 +138,30 @@ for k in k_values:
     wcss = calculate_wcss(data,centroids,labels)
     wcss_values.append(wcss)
 
+end_par = time.time()
+
 #3.-Cluster the data using the optimum value using k_means --> k=3
 chosen_k = 3
 centroids_k, prev_centroids_k = initialize_centroids(chosen_k,data)
 centroids_k, labels_k = k_means(chosen_k,data,centroids_k,prev_centroids_k)
 
-#4.-Measure time
-end = time.time()
-print("Execution time in seconds: ", end - start)
-
-#5.-Plot the results of the elbow graph.
-plot_elbow(k_values,wcss_values)
-
-# 6.- Plot the first two dimensions of the clusters (price and speed)
-plot_2D(data,labels_k,centroids_k)
-
-#7.-Find the cluster with the highest average price and print it.
+#4.-Find the cluster with the highest average price and print it.
 average_prices_per_cluster = [calculate_average_price(data, labels_k, cluster_num) for cluster_num in range(chosen_k)]
 highest_avg_price_cluster = np.argmax(average_prices_per_cluster)
 highest_avg_price = average_prices_per_cluster[highest_avg_price_cluster]
 print("Cluster with the highest average price is cluster", highest_avg_price_cluster)
 print("Average price of the cluster:", highest_avg_price)
+
+#5.-Measure total execution time and time of the part that will be parallelized
+end_total = time.time()
+print("Total execution time in seconds: ", end_total - start_total)
+print("Execution time for the part that will be parallelized: ", end_par - start_par)
+
+#6.-Plot the results of the elbow graph.
+plot_elbow(k_values,wcss_values)
+
+#7.- Plot the first two dimensions of the clusters (price and speed)
+plot_2D(data,labels_k,centroids_k)
 
 #8.- Print a heat map using the values of the clusters centroids
 plot_heatmap(centroids_k)

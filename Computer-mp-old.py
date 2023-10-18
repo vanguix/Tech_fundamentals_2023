@@ -131,10 +131,7 @@ def start_k_means(k, data):
     return k, wcss
     
 if __name__ == "__main__":
-    
-    start_total=time.time()
-    
-    df = pd.read_csv('computers_500000.csv', usecols=lambda column: column != 'id')
+    df = pd.read_csv('computers_50000.csv', usecols=lambda column: column != 'id')
     for col in ['cd', 'laptop']:
         df[col].replace(['no', 'yes'], [0, 1], inplace=True)
     data = df.to_numpy()
@@ -142,48 +139,40 @@ if __name__ == "__main__":
     wcss_values = []
     
     pool = mp.Pool(mp.cpu_count()) 
-    start_par = time.time()
-    
-    #1.- Construct the data for the elbow graph and find the optimal clusters number (k).
+    start = time.time()
+
     for k in k_values:
-        #2.- Implement the k-means algorithm
         results = pool.apply(start_k_means,args=(k,data))
         wcss_values.append(results)
             
     pool.close()
     pool.join()
 
-    #3.-Measure time for the parallelized part 
-    end_par = time.time()
-    print("Execution time for parallelized part in seconds: ", end_par - start_par)
 
-    #4.-Cluster the data using the optimum value using k_means --> k=3
+    #3.-Cluster the data using the optimum value using k_means --> k=3
     chosen_k = 3
     centroids_k, prev_centroids_k = initialize_centroids(chosen_k, data)
     centroids_k, labels_k = k_means(chosen_k, data, centroids_k, prev_centroids_k)
 
-    #5.-Find the cluster with the highest average price and print it.
+    #4.-Measure time
+    end = time.time()
+    print("Execution time in seconds: ", end - start)
+
+    #5.-Plot the results of the elbow graph.
+    # Sort wcss_values by k before plotting (threads may give the result unordered)
+    wcss_values.sort(key=lambda x: x[0])
+    k_values, sorted_wcss_values = zip(*wcss_values)
+    plot_elbow(k_values, sorted_wcss_values)
+
+    # 6.- Plot the first two dimensions of the clusters (price and speed)
+    plot_2D(data,labels_k,centroids_k)
+
+    #7.-Find the cluster with the highest average price and print it.
     average_prices_per_cluster = [calculate_average_price(data, labels_k, cluster_num) for cluster_num in range(chosen_k)]
     highest_avg_price_cluster = np.argmax(average_prices_per_cluster)
     highest_avg_price = average_prices_per_cluster[highest_avg_price_cluster]
     print("Cluster with the highest average price is cluster", highest_avg_price_cluster)
     print("Average price of the cluster:", highest_avg_price)
 
-    #6.-Plot the results of the elbow graph.
-    # Sort wcss_values by k before plotting (threads may give the result unordered)
-    wcss_values.sort(key=lambda x: x[0])
-    k_values, sorted_wcss_values = zip(*wcss_values)
-    
-    #7. Measure time of the total program (without the plots)
-    end_total=time.time()
-    print("Total execution time: ", end_total - start_total)
-    
-    #Plot in the elbow graph the sorted values
-    plot_elbow(k_values, sorted_wcss_values)
-
-    #8.- Plot the first two dimensions of the clusters (price and speed)
-    plot_2D(data,labels_k,centroids_k)
-
-
-    #9.- Print a heat map using the values of the clusters centroids
+    #8.- Print a heat map using the values of the clusters centroids
     plot_heatmap(centroids_k)
