@@ -22,19 +22,20 @@ else:
     upper = None
     
 #3) Start execution time
-start = MPI.Wtime()
+start_time = MPI.Wtime()
 
 upper = comm.bcast(upper, root=0)
 
 
 # Read the CSV just using process 0
 if rank == 0:
-    df = pd.read_csv("proteins_50000.csv")
+    df = pd.read_csv("proteins.csv")
 else:
     df = None
 
 
-##########OPCIÓN 1
+
+##########OPCIÓN 1 ROWS PER WORKER
 
 data = df.to_numpy() if df is not None else None
 if data is not None:
@@ -64,12 +65,14 @@ for pair in data_chunk:
 # combinar resultados de todos los procesos en el proceso 0
 all_results = comm.reduce(local_results, op=MPI.SUM, root=0)
 
+
 if rank == 0:
     #7) Show the execution time (solo el rank 0)
-    end = MPI.Wtime()
-    exec_time = end - start
+    
+    end_time = MPI.Wtime()
+    exec_time = end_time - start_time
     print("The execution time is:", exec_time)
-
+    
     #8) Print a histogram of occurrences using protein id as X and number of 
     #occurrences as Y, using matplotlib.pyplot
     #Represent the 10 proteins with more matches
@@ -103,8 +106,6 @@ if rank == 0:
 
 ###OPCIÓN 2
 
-#para ahorrar bcast y chunk puedo hacer que cada proceso lea x/rank
-
 # Broadcasting data to every process
 df = comm.bcast(df, root=0)
 
@@ -135,8 +136,8 @@ if rank == 0:
     results = [item for sublist in all_results for item in sublist]
     
     #7) Show the execution time (solo el rank 0)
-    end = MPI.Wtime()
-    exec_time = end - start
+    end_time = MPI.Wtime()
+    exec_time = end_time - start_time
     print("The execution time is:", exec_time)
 
     #8) Print a histogram of occurrences using protein id as X and number of 
@@ -168,6 +169,5 @@ if rank == 0:
 
     #9) Print the id and number of the protein with max occurrences
     print('Max occurences protein', max(more_matches))
-
 
 '''
