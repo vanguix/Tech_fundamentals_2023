@@ -36,7 +36,7 @@ else:
 
 
 ##########OPCIÓN 1 ROWS PER WORKER
-
+'''
 data = df.to_numpy() if df is not None else None
 if data is not None:
     total_rows = len(data)
@@ -65,43 +65,45 @@ for pair in data_chunk:
 # combinar resultados de todos los procesos en el proceso 0
 all_results = comm.reduce(local_results, op=MPI.SUM, root=0)
 
+if len(all_results) == 0:
+    print('There are no matches for that pattern')
+else:
+    if rank == 0:
+        #7) Show the execution time (solo el rank 0)
+        
+        end_time = MPI.Wtime()
+        exec_time = end_time - start_time
+        print("The execution time is:", exec_time)
+        
+        #8) Print a histogram of occurrences using protein id as X and number of 
+        #occurrences as Y, using matplotlib.pyplot
+        #Represent the 10 proteins with more matches
 
-if rank == 0:
-    #7) Show the execution time (solo el rank 0)
-    
-    end_time = MPI.Wtime()
-    exec_time = end_time - start_time
-    print("The execution time is:", exec_time)
-    
-    #8) Print a histogram of occurrences using protein id as X and number of 
-    #occurrences as Y, using matplotlib.pyplot
-    #Represent the 10 proteins with more matches
+        #Sorting based on the number of matches
+        sorted_matches = sorted(all_results, key=lambda tupla: tupla[1], reverse=True)
 
-    #Sorting based on the number of matches
-    sorted_matches = sorted(all_results, key=lambda tupla: tupla[1], reverse=True)
+        #Keeping 10
+        more_matches = sorted_matches[:10]
 
-    #Keeping 10
-    more_matches = sorted_matches[:10]
+        # Desempaqueta los valores en X y Y
+        protein_id, num_occurences = zip(*more_matches)
+        protein_id = sorted(list(protein_id))
+        num_occurences = sorted(list(num_occurences))
 
-    # Desempaqueta los valores en X y Y
-    protein_id, num_occurences = zip(*more_matches)
-    protein_id = sorted(list(protein_id))
-    num_occurences = sorted(list(num_occurences))
+        plt.plot(protein_id, num_occurences, drawstyle='steps', linestyle='-', marker='o')
 
-    plt.plot(protein_id, num_occurences, drawstyle='steps', linestyle='-', marker='o')
+        print(protein_id)
+        print(num_occurences)
 
-    print(protein_id)
-    print(num_occurences)
+        plt.xlabel('Protein ID')
+        plt.ylabel('Num of occurences')
+        plt.xticks(protein_id, rotation = 45)
+        plt.gca().yaxis.set_major_locator(MultipleLocator(1))
+        plt.show()
 
-    plt.xlabel('Protein ID')
-    plt.ylabel('Num of occurences')
-    plt.xticks(protein_id, rotation = 45)
-    plt.gca().yaxis.set_major_locator(MultipleLocator(1))
-    plt.show()
-
-    #9) Print the id and number of the protein with max occurrences
-    print('Max occurences protein', max(more_matches))
-    
+        #9) Print the id and number of the protein with max occurrences
+        print('Max occurences protein', max(more_matches))
+        
 '''    
 
 ###OPCIÓN 2
@@ -131,43 +133,45 @@ for pair in data_chunk[rank]:
 # Reúne los resultados de todos los procesos en el proceso 0
 all_results = comm.gather(local_results, root=0)
 
-if rank == 0:
-    # Combina los resultados de todos los procesos
-    results = [item for sublist in all_results for item in sublist]
-    
-    #7) Show the execution time (solo el rank 0)
-    end_time = MPI.Wtime()
-    exec_time = end_time - start_time
-    print("The execution time is:", exec_time)
+if len(all_results[0]) == 0:
+    print('There are no matches for that pattern')
+else:
+    if rank == 0:
+        # Combina los resultados de todos los procesos
+        results = [item for sublist in all_results for item in sublist]
+        
+        #7) Show the execution time (solo el rank 0)
+        end_time = MPI.Wtime()
+        exec_time = end_time - start_time
+        print("The execution time is:", exec_time)
 
-    #8) Print a histogram of occurrences using protein id as X and number of 
-    #occurrences as Y, using matplotlib.pyplot
-    #Represent the 10 proteins with more matches
+        #8) Print a histogram of occurrences using protein id as X and number of 
+        #occurrences as Y, using matplotlib.pyplot
+        #Represent the 10 proteins with more matches
 
-    #Sorting based on the number of matches
-    sorted_matches = sorted(results, key=lambda tupla: tupla[1], reverse=True)
+        #Sorting based on the number of matches
+        sorted_matches = sorted(results, key=lambda tupla: tupla[1], reverse=True)
 
-    #Keeping 10
-    more_matches = sorted_matches[:10]
+        #Keeping 10
+        more_matches = sorted_matches[:10]
 
-    # Desempaqueta los valores en X y Y
-    protein_id, num_occurences = zip(*more_matches)
-    protein_id = sorted(list(protein_id))
-    num_occurences = sorted(list(num_occurences))
+        # Desempaqueta los valores en X y Y
+        protein_id, num_occurences = zip(*more_matches)
+        protein_id = sorted(list(protein_id))
+        num_occurences = sorted(list(num_occurences))
 
-    plt.plot(protein_id, num_occurences, drawstyle='steps', linestyle='-', marker='o')
+        plt.plot(protein_id, num_occurences, drawstyle='steps', linestyle='-', marker='o')
 
-    print(protein_id)
-    print(num_occurences)
+        print(protein_id)
+        print(num_occurences)
 
-    plt.xlabel('Protein ID')
-    plt.ylabel('Num of occurences')
-    plt.xticks(protein_id, rotation = 45)
-    plt.gca().yaxis.set_major_locator(MultipleLocator(1))
-    plt.show()
+        plt.xlabel('Protein ID')
+        plt.ylabel('Num of occurences')
+        plt.xticks(protein_id, rotation = 45)
+        plt.gca().yaxis.set_major_locator(MultipleLocator(1))
+        plt.show()
 
 
-    #9) Print the id and number of the protein with max occurrences
-    print('Max occurences protein', max(more_matches))
+        #9) Print the id and number of the protein with max occurrences
+        print('Max occurences protein', max(more_matches))
 
-'''

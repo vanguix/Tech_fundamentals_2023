@@ -32,43 +32,47 @@ for pair in data:
         num_times = pattern.count(upper)
         result = index, num_times
         results.append(result)
-    
-print(results)        
-
-#7) Show the execution time
-end = time.time()
-exec_time = end - start
-print("The execution time is:", exec_time)
-
-#8) Print a histogram of occurrences using protein id as X and number of 
-#occurrences as Y, using matplotlib.pyplot
-#Represent the 10 proteins with more matches
-
-#Sorting based on the number of matches
-sorted_matches = sorted(results, key=lambda tupla: tupla[1], reverse=True)
-
-#Keeping 10
-more_matches = sorted_matches[:10]
-
-# Desempaqueta los valores en X y Y
-protein_id, num_occurences = zip(*more_matches)
-
-protein_id = sorted(list(protein_id))
-num_occurences = sorted(list(num_occurences))
-
-plt.plot(protein_id, num_occurences, drawstyle='steps', linestyle='-', marker='o')
-
-print(protein_id)
-print(num_occurences)
-
-plt.xlabel('Protein ID')
-plt.ylabel('Num of occurences')
-plt.xticks(protein_id, rotation = 45)
-plt.gca().yaxis.set_major_locator(MultipleLocator(1))
 
 
-plt.show()
+if len(results) == 0:
+    print('There are no matches for that pattern')
+else:
+    print(results)        
+
+    #7) Show the execution time
+    end = time.time()
+    exec_time = end - start
+    print("The execution time is:", exec_time)
+
+    #8) Print a histogram of occurrences using protein id as X and number of 
+    #occurrences as Y, using matplotlib.pyplot
+    #Represent the 10 proteins with more matches
+
+    #Sorting based on the number of matches
+    sorted_matches = sorted(results, key=lambda tupla: tupla[1], reverse=True)
+
+    #Keeping 10
+    more_matches = sorted_matches[:10]
+
+    # Desempaqueta los valores en X y Y
+    protein_id, num_occurences = zip(*more_matches)
+
+    protein_id = sorted(list(protein_id))
+    num_occurences = sorted(list(num_occurences))
+
+    plt.plot(protein_id, num_occurences, drawstyle='steps', linestyle='-', marker='o')
+
+    print(protein_id)
+    print(num_occurences)
+
+    plt.xlabel('Protein ID')
+    plt.ylabel('Num of occurences')
+    plt.xticks(protein_id, rotation = 45)
+    plt.gca().yaxis.set_major_locator(MultipleLocator(1))
 
 
-#9) Print the id and number of the protein with max occurrences
-print('Max occurences protein', max(more_matches))
+    plt.show()
+
+
+    #9) Print the id and number of the protein with max occurrences
+    print('Max occurences protein', max(more_matches))
