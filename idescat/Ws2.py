@@ -100,7 +100,7 @@ for i in range(len(years)):
 total = sum(marias_years)
 print('Women born in Catalonia named Maria in the last 5 years: ', total)
 
-plt.bar(years, marias_years)
+plt.bar(years, marias_years, color='skyblue')
 plt.xlabel('Last 5 years')
 plt.ylabel('Women born named María')
 plt.title('Women born named María in the last 5 years (2018-2022)')
@@ -166,7 +166,7 @@ def analyze_data(dic_list, years):
     return most_populous_counties
 
 def plot_data(counties, marias_locations):
-    plt.bar(counties, marias_locations)
+    plt.bar(counties, marias_locations,  color='skyblue')
     plt.xlabel('Counties')
     plt.ylabel('Women born named María')
     plt.title('Women born named María in every county in the last 5 years')
