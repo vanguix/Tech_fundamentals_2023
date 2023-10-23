@@ -52,7 +52,7 @@ last_5y = [str(year) for year in range(2018, 2023)]
 
 #Number of women born in Calalonia in every of the last 5 years
 for i in range(len(last_5y)):
-    print('Year:', last_5y[i], ', Women born named María:', nenes[i])
+    print('Year:', last_5y[i], ', Women born:', nenes[i])
 
 #####Total number of women born in Catalonia in the last 5 years
 total_nenes = sum(nenes)
@@ -128,6 +128,9 @@ def analyze_data(dic_list, years):
     for x, j in enumerate(dic_list):  # For every year
         counties = []
         marias_locations = []
+        marias_per_county = []
+
+        
 
         most_populous_county = ""
         number_of_marias = 0
@@ -144,6 +147,9 @@ def analyze_data(dic_list, years):
                     number_of_marias = int(marias_number)
             else:
                 marias_locations.append(0)
+                
+            marias_per_county.append(marias_locations) #info of every county per year
+            
 
         #print(f'--------------------------------------------Year: {years[x]}')
 
@@ -153,15 +159,17 @@ def analyze_data(dic_list, years):
         #for i in range(len(counties)):
             #print('County:', counties[i], ', Women born named María:', marias_locations[i])
 
-        plot_data(counties, marias_locations, years[x])
+    total_marias_loc = [sum(k) for k in zip(*marias_per_county)]
+
+    plot_data(counties, total_marias_loc)
 
     return most_populous_counties
 
-def plot_data(counties, marias_locations, year):
+def plot_data(counties, marias_locations):
     plt.bar(counties, marias_locations)
     plt.xlabel('Counties')
     plt.ylabel('Women born named María')
-    plt.title(f'Women born named María in every county ({year})')
+    plt.title('Women born named María in every county in the last 5 years')
     plt.xticks(rotation=60, ha='right', fontsize=8)
     plt.tight_layout()  # Ajustar el diseño para que quepa todo
     plt.show()
@@ -192,11 +200,4 @@ dic_list = fetch_data(years)
 most_populous_counties = analyze_data(dic_list, years)
 display_results(most_populous_counties)
 bar_plot(most_populous_counties)
-
-######################################################################    
-#The same for every year since there is data
-years2 = [str(year) for year in range(1997, 2023)] #probando con una url con class=t sé cuántas hay
-dic_list2 = fetch_data(years2)
-most_populous_counties2 = analyze_data(dic_list2, years2)
-display_results(most_populous_counties2)
 
